@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Minecraft Music</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: white;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      color: #aaa;
+      margin-bottom: 30px;
+    }
+
+    .song {
+      background: #1e1e1e;
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 15px;
+    }
+
+    .song-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      word-break: break-word;
+    }
+
+    audio {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .link {
+      display: block;
+      background: #5865f2;
+      color: white;
+      padding: 10px;
+      border-radius: 6px;
+      text-decoration: none;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .link:hover {
+      background: #4752c4;
+    }
+
+    .url {
+      background: #111;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      word-break: break-all;
+      color: #bbb;
+      cursor: pointer;
+    }
+
+    .loading {
+      color: #aaa;
+    }
+
+    .error {
+      color: #ff6b6b;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🎵 My Minecraft Music</h1>
+  <div class="subtitle">
+    Direct MP3 links for Minecraft Etched
+  </div>
+
+  <div id="songs" class="loading">
+    Loading music...
+  </div>
+
+  <script>
+    const username = "hinakoshinoe-lab";
+    const repository = "test";
+    const branch = "main";
+
+    const songsContainer = document.getElementById("songs");
+
+    async function loadMusic() {
+      try {
+        const api =
+          `https://api.github.com/repos/${username}/${repository}/contents/?ref=${branch}`;
+
+        const response = await fetch(api);
+
+        if (!response.ok) {
+          throw new Error("Could not access the GitHub repository.");
+        }
+
+        const files = await response.json();
+
+        const mp3Files = files.filter(file =>
+          file.type === "file" &&
+          file.name.toLowerCase().endsWith(".mp3")
+        );
+
+        if (mp3Files.length === 0) {
+          songsContainer.innerHTML =
+            "<p>No MP3 files found. Upload an MP3 to the repository.</p>";
+          return;
+        }
+
+        songsContainer.innerHTML = "";
+
+        mp3Files.forEach(file => {
+          const directURL =
+            `https://${username}.github.io/${repository}/` +
+            encodeURIComponent(file.name);
+
+          const song = document.createElement("div");
+          song.className = "song";
+
+          song.innerHTML = `
+            <div class="song-name">${escapeHTML(file.name)}</div>
+
+            <audio controls preload="none">
+              <source src="${directURL}" type="audio/mpeg">
+              Your browser does not support audio playback.
+            </audio>
+
+            <a class="link" href="${directURL}" target="_blank">
+              🔗 Open Direct MP3 Link
+            </a>
+
+            <div class="url"
+                 onclick="copyURL('${directURL}')"
+                 title="Click to copy">
+              ${directURL}
+            </div>
+          `;
+
+          songsContainer.appendChild(song);
+        });
+
+      } catch (error) {
+        songsContainer.innerHTML =
+          `<p class="error">Error: ${escapeHTML(error.message)}</p>`;
+      }
+    }
+
+    function copyURL(url) {
+      navigator.clipboard.writeText(url);
+      alert("Direct MP3 link copied!");
+    }
+
+    function escapeHTML(text) {
+      return text
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    loadMusic();
+  </script>
+
+</body>
+</html>
