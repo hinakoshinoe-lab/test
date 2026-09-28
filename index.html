@@ -3,177 +3,312 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Minecraft Music</title>
+
+  <title>My Music</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      background: #121212;
+      background: #0f1115;
       color: white;
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 20px;
     }
 
-    h1 {
-      margin-bottom: 5px;
+    header {
+      padding: 35px 20px;
+      text-align: center;
+      background: #171a21;
+      border-bottom: 1px solid #292d36;
     }
 
-    .subtitle {
-      color: #aaa;
-      margin-bottom: 30px;
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
+
+    header p {
+      margin: 0;
+      color: #9299a6;
+    }
+
+    #songs {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px;
     }
 
     .song {
-      background: #1e1e1e;
-      border-radius: 10px;
-      padding: 18px;
+      background: #191c23;
+      border: 1px solid #292d36;
+      border-radius: 12px;
+      padding: 20px;
       margin-bottom: 15px;
     }
 
     .song-name {
-      font-size: 18px;
+      font-size: 19px;
       font-weight: bold;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
       word-break: break-word;
     }
 
     audio {
       width: 100%;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
     }
 
-    .link {
-      display: block;
-      background: #5865f2;
-      color: white;
-      padding: 10px;
-      border-radius: 6px;
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button,
+    .open-button {
+      border: none;
+      border-radius: 7px;
+      padding: 11px 15px;
+      font-size: 14px;
+      cursor: pointer;
       text-decoration: none;
-      text-align: center;
-      margin-bottom: 8px;
+      color: white;
     }
 
-    .link:hover {
+    .copy-button {
+      background: #5865f2;
+    }
+
+    .copy-button:hover {
       background: #4752c4;
     }
 
+    .open-button {
+      background: #30343d;
+      display: inline-block;
+    }
+
+    .open-button:hover {
+      background: #3b404b;
+    }
+
     .url {
-      background: #111;
+      margin-top: 12px;
       padding: 10px;
+      background: #0d0f13;
       border-radius: 6px;
+      color: #777f8d;
       font-size: 12px;
       word-break: break-all;
-      color: #bbb;
-      cursor: pointer;
     }
 
     .loading {
-      color: #aaa;
+      text-align: center;
+      color: #9299a6;
+      padding: 40px;
     }
 
     .error {
-      color: #ff6b6b;
+      background: #35191c;
+      color: #ff8585;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #9299a6;
+      padding: 50px 20px;
     }
   </style>
 </head>
 
 <body>
 
-  <h1>🎵 My Minecraft Music</h1>
-  <div class="subtitle">
-    Direct MP3 links for Minecraft Etched
+<header>
+  <h1>🎵 My Music</h1>
+  <p>Music for Minecraft Etched</p>
+</header>
+
+<div id="songs">
+  <div class="loading">
+    Loading songs...
   </div>
+</div>
 
-  <div id="songs" class="loading">
-    Loading music...
-  </div>
+<script>
 
-  <script>
-    const username = "hinakoshinoe-lab";
-    const repository = "test";
-    const branch = "main";
+  const USERNAME = "hinakoshinoe-lab";
+  const REPOSITORY = "test";
+  const BRANCH = "main";
+  const MUSIC_FOLDER = "music";
 
-    const songsContainer = document.getElementById("songs");
+  const songsContainer = document.getElementById("songs");
 
-    async function loadMusic() {
-      try {
-        const api =
-          `https://api.github.com/repos/${username}/${repository}/contents/?ref=${branch}`;
 
-        const response = await fetch(api);
+  async function loadMusic() {
 
-        if (!response.ok) {
-          throw new Error("Could not access the GitHub repository.");
-        }
+    try {
 
-        const files = await response.json();
+      const api =
+        `https://api.github.com/repos/${USERNAME}/${REPOSITORY}/contents/${MUSIC_FOLDER}?ref=${BRANCH}`;
 
-        const mp3Files = files.filter(file =>
-          file.type === "file" &&
-          file.name.toLowerCase().endsWith(".mp3")
+      const response = await fetch(api);
+
+      if (!response.ok) {
+        throw new Error(
+          "The music folder could not be found. Make sure you created a folder called 'music'."
         );
+      }
 
-        if (mp3Files.length === 0) {
-          songsContainer.innerHTML =
-            "<p>No MP3 files found. Upload an MP3 to the repository.</p>";
-          return;
-        }
+      const files = await response.json();
 
-        songsContainer.innerHTML = "";
 
-        mp3Files.forEach(file => {
-          const directURL =
-            `https://${username}.github.io/${repository}/` +
-            encodeURIComponent(file.name);
+      const mp3Files = files.filter(file =>
+        file.type === "file" &&
+        file.name.toLowerCase().endsWith(".mp3")
+      );
 
-          const song = document.createElement("div");
-          song.className = "song";
 
-          song.innerHTML = `
-            <div class="song-name">${escapeHTML(file.name)}</div>
+      if (mp3Files.length === 0) {
 
-            <audio controls preload="none">
-              <source src="${directURL}" type="audio/mpeg">
-              Your browser does not support audio playback.
-            </audio>
+        songsContainer.innerHTML = `
+          <div class="empty">
+            <h2>No songs yet 🎵</h2>
+            <p>Upload MP3 files into the <b>music</b> folder.</p>
+          </div>
+        `;
 
-            <a class="link" href="${directURL}" target="_blank">
-              🔗 Open Direct MP3 Link
+        return;
+      }
+
+
+      songsContainer.innerHTML = "";
+
+
+      mp3Files.sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+
+
+      mp3Files.forEach(file => {
+
+        const encodedFilename =
+          encodeURIComponent(file.name);
+
+        const directURL =
+          `https://${USERNAME}.github.io/${REPOSITORY}/${MUSIC_FOLDER}/${encodedFilename}`;
+
+
+        const song = document.createElement("div");
+
+        song.className = "song";
+
+
+        song.innerHTML = `
+
+          <div class="song-name">
+            🎵 ${escapeHTML(file.name)}
+          </div>
+
+          <audio controls preload="none">
+            <source
+              src="${directURL}"
+              type="audio/mpeg">
+          </audio>
+
+          <div class="buttons">
+
+            <button
+              class="copy-button"
+              onclick="copyURL('${escapeJS(directURL)}')">
+              📋 Copy Etched Link
+            </button>
+
+            <a
+              class="open-button"
+              href="${directURL}"
+              target="_blank">
+              🔗 Open MP3
             </a>
 
-            <div class="url"
-                 onclick="copyURL('${directURL}')"
-                 title="Click to copy">
-              ${directURL}
-            </div>
-          `;
+          </div>
 
-          songsContainer.appendChild(song);
-        });
+          <div class="url">
+            ${escapeHTML(directURL)}
+          </div>
 
-      } catch (error) {
-        songsContainer.innerHTML =
-          `<p class="error">Error: ${escapeHTML(error.message)}</p>`;
-      }
+        `;
+
+
+        songsContainer.appendChild(song);
+
+      });
+
     }
 
-    function copyURL(url) {
-      navigator.clipboard.writeText(url);
-      alert("Direct MP3 link copied!");
+    catch (error) {
+
+      songsContainer.innerHTML = `
+        <div class="error">
+          ❌ ${escapeHTML(error.message)}
+        </div>
+      `;
+
     }
 
-    function escapeHTML(text) {
-      return text
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+  }
+
+
+  async function copyURL(url) {
+
+    try {
+
+      await navigator.clipboard.writeText(url);
+
+      alert("✅ Etched link copied!");
+
     }
 
-    loadMusic();
-  </script>
+    catch {
+
+      prompt(
+        "Copy this link:",
+        url
+      );
+
+    }
+
+  }
+
+
+  function escapeHTML(text) {
+
+    return text
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  }
+
+
+  function escapeJS(text) {
+
+    return text
+      .replaceAll("\\", "\\\\")
+      .replaceAll("'", "\\'");
+
+  }
+
+
+  loadMusic();
+
+</script>
 
 </body>
 </html>
